@@ -8,7 +8,7 @@ import (
 	"os/user"
 	"path/filepath"
 
-	"abmp.cc/upack/pkg"
+	"github.com/abmpio/upack/pkg"
 )
 
 const (

@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"abmp.cc/upack/cmd/cast"
+	"github.com/abmpio/upack/cmd/cast"
 )
 
 func getCurrentDirectory() string {

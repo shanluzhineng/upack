@@ -1,4 +1,4 @@
-module abmp.cc/upack
+module github.com/abmpio/upack
 
 go 1.19
 

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"abmp.cc/upack/cmd"
+	"github.com/abmpio/upack/cmd"
 )
 
 func main() {

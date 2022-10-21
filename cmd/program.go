@@ -3,7 +3,7 @@ package cmd
 import (
 	"os"
 
-	"abmp.cc/upack/pkg"
+	"github.com/abmpio/upack/pkg"
 )
 
 var (
