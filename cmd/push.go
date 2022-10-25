@@ -10,14 +10,12 @@ import (
 )
 
 type push struct {
-	Package        string
-	SourceURL      string
-	SourceFeedName string
-	ApiKey         string
+	Package string
 
-	Type            PackageType
-	_sourceFeedUrl  string
-	_authentication *[2]string
+	SourceFeedName string
+	Type           PackageType
+
+	_configuration Configuration
 }
 
 func (*push) Name() string { return "push" }
@@ -42,48 +40,15 @@ func (*push) PositionalArguments() []pkg.PositionalArgument {
 }
 
 func (*push) ExtraArguments() []pkg.ExtraArgument {
-	return []pkg.ExtraArgument{
-		{
-			Name:        "sourceUrl",
-			Description: "远程仓库的url.",
-			Required:    false,
-			TrySetValue: pkg.TrySetStringValue("source", func(cmd pkg.Command) *string {
-				return &cmd.(*push).SourceURL
-			}),
-		},
-		{
-			Name:        "sourceFeedName",
-			Description: "远程仓库所对应的feed名称.",
-			Required:    false,
-			TrySetValue: pkg.TrySetStringValue("sourceFeedName", func(cmd pkg.Command) *string {
-				return &cmd.(*push).SourceFeedName
-			}),
-		}, {
-			Name:        "apikey",
-			Description: "访问远程仓库所需要的apiKey.",
-			Required:    false,
-			TrySetValue: pkg.TrySetPathValue("apikey", func(cmd pkg.Command) *string {
-				return &cmd.(*push).ApiKey
-			}),
-		},
-	}
+	return nil
 }
 
 // 设置默认属性
 func (i *push) setupDefaultProperties() {
-	if len(i.ApiKey) <= 0 && len(_configuration.Authentication) > 1 {
-		i.ApiKey = _configuration.Authentication[1]
-	}
-	if len(i.SourceURL) <= 0 {
-		i.SourceURL = _configuration.SourceUrl
-	}
-	if len(i.SourceFeedName) <= 0 {
-		i.SourceFeedName = _configuration.SourceFeedName
-	}
-	i._sourceFeedUrl = getSourceFeedUrl(i.SourceURL, i.SourceFeedName)
-
-	if len(i.ApiKey) > 0 {
-		i._authentication = getAuthentication(i.ApiKey)
+	if len(i.SourceFeedName) > 0 {
+		i._configuration = defaultConfigurationWithFeedName(i.SourceFeedName)
+	} else {
+		i._configuration = *defaultConfiguration()
 	}
 	i.Type = PackageType_Plugin
 }
@@ -142,7 +107,7 @@ func (p *push) Run() int {
 
 	pkg.PrintManifest(info)
 
-	req, err := http.NewRequest("PUT", p._sourceFeedUrl, packageStream)
+	req, err := http.NewRequest("PUT", p._configuration.SourceFeedUrl, packageStream)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return 1
@@ -151,8 +116,8 @@ func (p *push) Run() int {
 	req.Header.Set("Content-Length", fmt.Sprintf("%d", fi.Size()))
 	req.Header.Set("Content-Type", "application/octet-stream")
 
-	if p._authentication != nil {
-		req.SetBasicAuth(p._authentication[0], p._authentication[1])
+	if p._configuration.Authentication != nil {
+		req.SetBasicAuth(p._configuration.Authentication[0], p._configuration.Authentication[1])
 	}
 
 	resp, err := http.DefaultClient.Do(req)

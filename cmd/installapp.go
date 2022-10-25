@@ -9,7 +9,6 @@ import (
 type installapp struct {
 	//应用名称, 格式使用: 所属组/名称@版本，[所属组]与[版本]可为空，如App/helloworld@2.*，如果不包含所属组，如helloworld，则将使用App组
 	PackageName string
-	ApiKey      string
 }
 
 func (*installapp) Name() string { return "installapp" }
@@ -34,16 +33,7 @@ func (*installapp) PositionalArguments() []pkg.PositionalArgument {
 }
 
 func (*installapp) ExtraArguments() []pkg.ExtraArgument {
-	return []pkg.ExtraArgument{
-		{
-			Name:        "apikey",
-			Description: "访问远程仓库所需要的apiKey.",
-			Required:    false,
-			TrySetValue: pkg.TrySetPathValue("apikey", func(cmd pkg.Command) *string {
-				return &cmd.(*installapp).ApiKey
-			}),
-		},
-	}
+	return nil
 }
 
 func (i *installapp) Run() int {
@@ -56,7 +46,6 @@ func (i *installapp) Run() int {
 	}
 	installCmd := new(install)
 	installCmd.PackageName = packageName
-	installCmd.ApiKey = i.ApiKey
 	installCmd.SourceFeedName = _defaultAppSourceFeedName
 	installCmd.Type = PackageType_App
 

@@ -15,9 +15,10 @@ import (
 
 type pack struct {
 	SourceDirectory string
+	//模块所属组、名称、版本的组合名称, 格式使用: 所属组/名称@版本，版本可为空，如system/quartz@2.2.0,system/quartz@2.*"
+	PackageName string
 	//是否自动push
 	AutoPush bool
-	ApiKey   string
 
 	Metadata        pkg.UniversalPackageMetadata
 	TargetDirectory string
@@ -34,7 +35,16 @@ func (p *pack) Help() string  { return pkg.DefaultCommandHelp(p) }
 func (p *pack) Usage() string { return pkg.DefaultCommandUsage(p) }
 
 func (*pack) PositionalArguments() []pkg.PositionalArgument {
-	return nil
+	return []pkg.PositionalArgument{
+		{
+			Name:        "package",
+			Description: "模块所属组、名称、版本的组合名称, 格式使用: 所属组/名称@版本,版本可为空,如system/quartz@2.2.0,system/quartz@2.*",
+			Index:       0,
+			TrySetValue: pkg.TrySetStringValue("package", func(cmd pkg.Command) *string {
+				return &cmd.(*pack).PackageName
+			}),
+		},
+	}
 }
 
 func (*pack) ExtraArguments() []pkg.ExtraArgument {
@@ -47,44 +57,31 @@ func (*pack) ExtraArguments() []pkg.ExtraArgument {
 			}),
 		},
 		{
-			Name:        "name",
-			Description: "plugin包名,如果不指定将使用文件夹的名称",
-			TrySetValue: pkg.TrySetStringFnValue("name", func(cmd pkg.Command) func(string) {
-				return (&cmd.(*pack).Metadata).SetName
-			}),
-		},
-		{
 			Name:        "push",
 			Description: "是否自动push到仓库中",
 			TrySetValue: pkg.TrySetBoolValue("push", func(cmd pkg.Command) *bool {
 				return &cmd.(*pack).AutoPush
 			}),
 		},
-		{
-			Name:        "ver",
-			Description: "应用版本号,如果未指定将自动决定版本号.仓库中不存在此包则版本号为1.0.0,如果已经有,则将版本号的minor部分加1,如已经存在了1.1.0的包,则新的包为1.2.0",
-			TrySetValue: pkg.TrySetStringFnValue("version", func(cmd pkg.Command) func(string) {
-				return (&cmd.(*pack).Metadata).SetVersion
-			}),
-		},
 	}
 }
 
 func (p *pack) setupDefaultProperties() {
-	p._configuration = defaultConfigurationWithFeedName(_defaultAppSourceFeedName)
+	p._configuration = *defaultConfiguration()
 	if p.TargetDirectory == "" {
 		p.TargetDirectory, _ = os.Getwd()
 	}
 	if len(p.SourceDirectory) <= 0 {
 		p.SourceDirectory, _ = os.Getwd()
 	}
-	p.Metadata.SetGroup(_defaultAppGroupName)
-	if len(p.Metadata.Name()) <= 0 {
-		currentPathName, err := os.Getwd()
-		if err == nil {
-			p.Metadata.SetName(filepath.Base(currentPathName))
-		}
+	newPackageInfo, err := parsePackageNameWithVersion(p.PackageName)
+	if err != nil || newPackageInfo == nil {
+		fmt.Fprintf(os.Stderr, "无效的模块名: %s.\n", p.PackageName)
+		return
 	}
+	p.Metadata.SetGroup(newPackageInfo.group)
+	p.Metadata.SetName(newPackageInfo.name)
+	p.Metadata.SetVersion(newPackageInfo.version)
 	if len(p.Metadata.Version()) <= 0 {
 		latestVersion, err := getLatestVersion(p._configuration.SourceFeedUrl,
 			p.Metadata.Group(),
@@ -98,6 +95,9 @@ func (p *pack) setupDefaultProperties() {
 		if latestVersion == nil {
 			p.Metadata.SetVersion("1.0.0")
 		}
+	}
+	if len(p.Metadata.Title()) <= 0 {
+		p.Metadata.SetTitle(newPackageInfo.name)
 	}
 }
 
@@ -219,9 +219,6 @@ func (p *pack) Run() int {
 	if p.AutoPush {
 		pushCmd := new(push)
 		pushCmd.Package = filepath.Base(targetFileName)
-		pushCmd.ApiKey = p.ApiKey
-		pushCmd.SourceFeedName = _defaultAppSourceFeedName
-		pushCmd.Type = PackageType_App
 		return pushCmd.Run()
 	}
 	return 0

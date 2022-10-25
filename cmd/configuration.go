@@ -17,10 +17,6 @@ const (
 	_envKeyApiKey    string = ConfigurationKey + ".apiKey"
 )
 
-var (
-	_configuration *Configuration = defaultConfiguration()
-)
-
 func getConfigKey(key string) string {
 	return strings.ToLower(key)
 }

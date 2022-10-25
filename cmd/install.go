@@ -21,9 +21,7 @@ const (
 type install struct {
 	//模块所属组、名称、版本的组合名称, 格式使用: 所属组/名称@版本，版本可为空，如system/quartz@2.2.0,system/quartz@2.*"
 	PackageName    string
-	SourceURL      string
 	SourceFeedName string
-	ApiKey         string
 
 	Type PackageType
 	//下载的包的元数据
@@ -31,8 +29,9 @@ type install struct {
 	_registry        pkg.Registry
 	_packageInfo     *packageInfo
 	_targetDirectory string
-	_sourceFeedUrl   string
-	_authentication  *[2]string
+
+	//配置信息
+	_configuration Configuration
 }
 
 func (*install) Name() string { return "install" }
@@ -57,52 +56,20 @@ func (*install) PositionalArguments() []pkg.PositionalArgument {
 }
 
 func (*install) ExtraArguments() []pkg.ExtraArgument {
-	return []pkg.ExtraArgument{
-		{
-			Name:        "sourceUrl",
-			Description: "远程仓库的url.",
-			Required:    false,
-			TrySetValue: pkg.TrySetStringValue("source", func(cmd pkg.Command) *string {
-				return &cmd.(*install).SourceURL
-			}),
-		},
-		{
-			Name:        "sourceFeedName",
-			Description: "远程仓库所对应的feed名称.",
-			Required:    false,
-			TrySetValue: pkg.TrySetStringValue("sourceFeedName", func(cmd pkg.Command) *string {
-				return &cmd.(*install).SourceFeedName
-			}),
-		},
-		{
-			Name:        "apikey",
-			Description: "访问远程仓库所需要的apiKey.",
-			Required:    false,
-			TrySetValue: pkg.TrySetPathValue("apikey", func(cmd pkg.Command) *string {
-				return &cmd.(*install).ApiKey
-			}),
-		},
-	}
+	return nil
 }
 
 // 设置默认属性
 func (i *install) setupDefaultProperties() {
-	if len(i.ApiKey) <= 0 && len(_configuration.Authentication) > 1 {
-		i.ApiKey = _configuration.Authentication[1]
+	if len(i.SourceFeedName) > 0 {
+		i._configuration = defaultConfigurationWithFeedName(i.SourceFeedName)
+	} else {
+		i._configuration = *defaultConfiguration()
 	}
-	if len(i.SourceURL) <= 0 {
-		i.SourceURL = _configuration.SourceUrl
+	if len(i.Type) <= 0 {
+		i.Type = PackageType_Plugin
+		i._registry = pkg.PlugIns
 	}
-	if len(i.SourceFeedName) <= 0 {
-		i.SourceFeedName = _configuration.SourceFeedName
-	}
-	i._sourceFeedUrl = getSourceFeedUrl(i.SourceURL, i.SourceFeedName)
-
-	if len(i.ApiKey) > 0 {
-		i._authentication = getAuthentication(i.ApiKey)
-	}
-	i.Type = PackageType_Plugin
-	i._registry = pkg.PlugIns
 }
 
 func (i *install) Run() int {
@@ -146,7 +113,12 @@ func (i *install) OpenPackage() (io.ReaderAt, int64, func() error, error) {
 	//保存解析的packageInfo
 	i._packageInfo = newPackageInfo
 
-	versionString, err := pkg.GetVersion(i._sourceFeedUrl, newPackageInfo.group, newPackageInfo.name, newPackageInfo.version, i._authentication, _defaultPrerelease)
+	versionString, err := pkg.GetVersion(i._configuration.SourceFeedUrl,
+		newPackageInfo.group,
+		newPackageInfo.name,
+		newPackageInfo.version,
+		i._configuration.Authentication,
+		_defaultPrerelease)
 	if err != nil {
 		return nil, 0, nil, err
 	}
@@ -169,7 +141,12 @@ func (i *install) OpenPackage() (io.ReaderAt, int64, func() error, error) {
 		targetDirectory = i.formatTargetPath(newPackageInfo, false)
 	}
 
-	f, done, err := i._registry.GetOrDownload(newPackageInfo.group, newPackageInfo.name, version, i._sourceFeedUrl, i._authentication, _defaultCachePackages)
+	f, done, err := i._registry.GetOrDownload(newPackageInfo.group,
+		newPackageInfo.name,
+		version,
+		i._configuration.SourceFeedUrl,
+		i._configuration.Authentication,
+		_defaultCachePackages)
 	if err != nil {
 		return nil, 0, nil, err
 	}
@@ -194,7 +171,15 @@ func (i *install) OpenPackage() (io.ReaderAt, int64, func() error, error) {
 	}
 
 	if i.Type == PackageType_Plugin {
-		err = i._registry.RegisterPackage(newPackageInfo.group, newPackageInfo.name, version, targetDirectory, i._sourceFeedUrl, i._authentication, nil, nil, userName)
+		err = i._registry.RegisterPackage(newPackageInfo.group,
+			newPackageInfo.name,
+			version,
+			targetDirectory,
+			i._configuration.SourceFeedUrl,
+			i._configuration.Authentication,
+			nil,
+			nil,
+			userName)
 		if err != nil {
 			return nil, 0, nil, err
 		}

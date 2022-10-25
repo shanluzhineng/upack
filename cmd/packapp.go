@@ -17,7 +17,6 @@ type packapp struct {
 	SourceDirectory string
 	//是否自动push
 	AutoPush bool
-	ApiKey   string
 
 	Metadata        pkg.UniversalPackageMetadata
 	TargetDirectory string
@@ -219,7 +218,6 @@ func (p *packapp) Run() int {
 	if p.AutoPush {
 		pushCmd := new(push)
 		pushCmd.Package = filepath.Base(targetFileName)
-		pushCmd.ApiKey = p.ApiKey
 		pushCmd.SourceFeedName = _defaultAppSourceFeedName
 		pushCmd.Type = PackageType_App
 		return pushCmd.Run()

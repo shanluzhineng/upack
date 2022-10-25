@@ -10,10 +10,15 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 
 	"github.com/pkg/errors"
+)
+
+var (
+	_ignoreOverwriteExtensionList []string = []string{".json", ".config"}
 )
 
 type Command interface {
@@ -244,21 +249,22 @@ func UnpackZip(targetDirectory string, overwrite bool, zipFile *zip.Reader, pres
 		targetPath := filepath.Join(targetDirectory, entry.Name[len("package/"):])
 
 		if entry.Mode().IsDir() {
-			err = os.MkdirAll(targetPath, 0777)
-			if err != nil {
-				return err
+			if len(targetPath) > 0 {
+				err = os.MkdirAll(targetPath, 0777)
+				if err != nil {
+					return err
+				}
+				fi, err := os.Stat(targetPath)
+				if err != nil {
+					return err
+				}
+				// Honor umask and make sure directory execute is set if directory read is set.
+				mode := (entry.Mode() | (entry.Mode()&0444)>>2) & fi.Mode()
+				err = os.Chmod(targetPath, mode)
+				if err != nil {
+					return err
+				}
 			}
-			fi, err := os.Stat(targetPath)
-			if err != nil {
-				return err
-			}
-			// Honor umask and make sure directory execute is set if directory read is set.
-			mode := (entry.Mode() | (entry.Mode()&0444)>>2) & fi.Mode()
-			err = os.Chmod(targetPath, mode)
-			if err != nil {
-				return err
-			}
-
 			directories++
 		} else {
 			err = os.MkdirAll(filepath.Dir(targetPath), 0777)
@@ -279,6 +285,12 @@ func UnpackZip(targetDirectory string, overwrite bool, zipFile *zip.Reader, pres
 }
 
 func saveEntryToFile(entry *zip.File, targetPath string, overwrite, preserveTimestamps bool) (err error) {
+	if ignoreExtensionFile(targetPath) {
+		existFile, err := os.Stat(targetPath)
+		if existFile != nil && err == nil {
+			return nil
+		}
+	}
 	r, err := entry.Open()
 	if err != nil {
 		return
@@ -317,6 +329,18 @@ func saveEntryToFile(entry *zip.File, targetPath string, overwrite, preserveTime
 	}
 
 	return
+}
+
+// 如果文件已经存在时，是否忽略
+func ignoreExtensionFile(filePath string) bool {
+	filename := path.Base(filePath)
+	ext := path.Ext(filename)
+	for _, eachExt := range _ignoreOverwriteExtensionList {
+		if strings.EqualFold(eachExt, ext) {
+			return true
+		}
+	}
+	return false
 }
 
 func CreateEntryFromFile(zipFile *zip.Writer, fileName, entryPath string) (err error) {
