@@ -3,6 +3,23 @@ package cmd
 import (
 	"errors"
 	"strings"
+
+	"github.com/abmpio/upack/pkg"
+)
+
+type PackageType string
+
+const (
+	_defaultAppGroupName      = "App"
+	_defaultPluginGroupName   = "plugins"
+	_defaultAppSourceFeedName = "app"
+
+	PackageType_Plugin PackageType = "plugin"
+	PackageType_App    PackageType = "app"
+	PackageType_Tools  PackageType = "tools"
+
+	//元数据属性名称之type
+	_metaPropertyName_Type = "_type"
 )
 
 type packageInfo struct {
@@ -36,4 +53,17 @@ func parseGroupAndName(packageName string) *packageInfo {
 	packageInfo.group = strings.Join(parts[:len(parts)-1], "/")
 	packageInfo.name = parts[len(parts)-1]
 	return packageInfo
+}
+
+// find latest version in source feed
+func getLatestVersion(source, group, name, version string, credentials *[2]string, prerelease bool) (latestVersion *pkg.UniversalPackageVersion, err error) {
+	versionString, err := pkg.GetVersion(source, group, name, version, credentials, prerelease)
+	if err != nil {
+		return nil, err
+	}
+	latestVersion, err = pkg.ParseUniversalPackageVersion(versionString)
+	if err != nil {
+		return nil, err
+	}
+	return latestVersion, nil
 }

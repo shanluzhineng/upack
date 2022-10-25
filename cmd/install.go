@@ -25,6 +25,11 @@ type install struct {
 	SourceFeedName string
 	ApiKey         string
 
+	Type PackageType
+	//下载的包的元数据
+	_metadata        *pkg.UniversalPackageMetadata
+	_registry        pkg.Registry
+	_packageInfo     *packageInfo
 	_targetDirectory string
 	_sourceFeedUrl   string
 	_authentication  *[2]string
@@ -96,6 +101,8 @@ func (i *install) setupDefaultProperties() {
 	if len(i.ApiKey) > 0 {
 		i._authentication = getAuthentication(i.ApiKey)
 	}
+	i.Type = PackageType_Plugin
+	i._registry = pkg.PlugIns
 }
 
 func (i *install) Run() int {
@@ -114,7 +121,12 @@ func (i *install) Run() int {
 		return 1
 	}
 
-	err = pkg.UnpackZip(i._targetDirectory, _defaultOverwrite, zip, _defaultPrerelease)
+	targetDirectory := i._targetDirectory
+	if len(targetDirectory) <= 0 {
+		targetDirectory = i.formatTargetPath(i._packageInfo, true)
+	}
+
+	err = pkg.UnpackZip(targetDirectory, _defaultOverwrite, zip, _defaultPrerelease)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return 1
@@ -124,13 +136,15 @@ func (i *install) Run() int {
 }
 
 func (i *install) OpenPackage() (io.ReaderAt, int64, func() error, error) {
-	var r pkg.Registry
 	var version *pkg.UniversalPackageVersion
 
 	newPackageInfo, err := parsePackageNameWithVersion(i.PackageName)
 	if err != nil {
 		return nil, 0, nil, fmt.Errorf("无效的模块名:%s", i.PackageName)
 	}
+
+	//保存解析的packageInfo
+	i._packageInfo = newPackageInfo
 
 	versionString, err := pkg.GetVersion(i._sourceFeedUrl, newPackageInfo.group, newPackageInfo.name, newPackageInfo.version, i._authentication, _defaultPrerelease)
 	if err != nil {
@@ -147,30 +161,67 @@ func (i *install) OpenPackage() (io.ReaderAt, int64, func() error, error) {
 		userName = &u.Username
 	}
 
-	r = pkg.PlugIns
 	//version
 	newPackageInfo.version = version.String()
 
-	err = r.RegisterPackage(newPackageInfo.group, newPackageInfo.name, version, i._targetDirectory, i._sourceFeedUrl, i._authentication, nil, nil, userName)
+	targetDirectory := i._targetDirectory
+	if len(targetDirectory) <= 0 {
+		targetDirectory = i.formatTargetPath(newPackageInfo, false)
+	}
+
+	f, done, err := i._registry.GetOrDownload(newPackageInfo.group, newPackageInfo.name, version, i._sourceFeedUrl, i._authentication, _defaultCachePackages)
 	if err != nil {
 		return nil, 0, nil, err
 	}
 
-	f, done, err := r.GetOrDownload(newPackageInfo.group, newPackageInfo.name, version, i._sourceFeedUrl, i._authentication, _defaultCachePackages)
-	if err != nil {
-		return nil, 0, nil, err
-	}
-
-	i._targetDirectory = i.formatTargetPath(r, newPackageInfo)
 	fi, err := f.Stat()
 	if err != nil {
 		_ = done()
 		return nil, 0, nil, err
 	}
 
+	zip, err := zip.NewReader(f, fi.Size())
+	if err == nil {
+		//check upack is app or plugin?
+		metadata, err := i.readManifest(zip)
+		if metadata != nil && err == nil {
+			i._metadata = metadata
+			packageType, ok := (*metadata)[_metaPropertyName_Type].(string)
+			if ok && len(packageType) > 0 {
+				i.Type = PackageType(packageType)
+			}
+		}
+	}
+
+	if i.Type == PackageType_Plugin {
+		err = i._registry.RegisterPackage(newPackageInfo.group, newPackageInfo.name, version, targetDirectory, i._sourceFeedUrl, i._authentication, nil, nil, userName)
+		if err != nil {
+			return nil, 0, nil, err
+		}
+	}
 	return f, fi.Size(), done, nil
 }
 
-func (i *install) formatTargetPath(registry pkg.Registry, info *packageInfo) string {
-	return filepath.Join(string(registry), info.group, info.name, info.version)
+func (i *install) formatTargetPath(info *packageInfo, absPath bool) string {
+	if i.Type != PackageType_Plugin {
+		//app，install current folder
+		return ""
+	}
+	if absPath {
+		return filepath.Join(string(i._registry), info.group, info.name, info.version)
+	}
+	return filepath.Join(info.group, info.name, info.version)
+}
+
+func (i *install) readManifest(zip *zip.Reader) (*pkg.UniversalPackageMetadata, error) {
+	for _, entry := range zip.File {
+		if entry.Name == "upack.json" {
+			r, err := entry.Open()
+			if err != nil {
+				return nil, err
+			}
+			return pkg.ReadManifest(r)
+		}
+	}
+	return nil, nil
 }

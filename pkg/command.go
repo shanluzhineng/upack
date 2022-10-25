@@ -219,7 +219,7 @@ func PrintManifest(info *UniversalPackageMetadata) {
 
 func UnpackZip(targetDirectory string, overwrite bool, zipFile *zip.Reader, preserveTimestamps bool) error {
 	var err error
-	if overwrite {
+	if overwrite && len(targetDirectory) > 0 {
 		err = os.RemoveAll(targetDirectory)
 		if err != nil {
 			fmt.Println(err.Error())
@@ -232,6 +232,7 @@ func UnpackZip(targetDirectory string, overwrite bool, zipFile *zip.Reader, pres
 		}
 	}
 
+	fmt.Println("extract to", targetDirectory, ", please waitting...")
 	var files int
 	var directories int
 

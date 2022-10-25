@@ -62,6 +62,12 @@ func defaultConfiguration() *Configuration {
 	return config
 }
 
+func defaultConfigurationWithFeedName(feedName string) Configuration {
+	defaultConfig := defaultConfiguration()
+	defaultConfig.SetSourceFeedName(feedName)
+	return *defaultConfig
+}
+
 // 从key/value配置中读取配置信息
 func (c *Configuration) readFromConfig(properties map[string]interface{}) {
 	apiKey, ok := properties[getConfigKey("apiKey")].(string)
@@ -91,9 +97,14 @@ func (c *Configuration) SetAppPackageRegistryPath(relativePath string) {
 
 // 设置sourceUrl与feedName
 func (c *Configuration) SetSourceFeedUrl(sourceUrl string, sourceFeedName string) {
-	c.SourceFeedUrl = sourceUrl
+	c.SourceUrl = sourceUrl
 	c.SourceFeedName = sourceFeedName
 	c.SourceFeedUrl = getSourceFeedUrl(sourceUrl, sourceFeedName)
+}
+
+func (c *Configuration) SetSourceFeedName(feedName string) {
+	c.SourceFeedName = feedName
+	c.SetSourceFeedUrl(c.SourceUrl, feedName)
 }
 
 func getSourceFeedUrl(sourceUrl string, sourceFeedName string) string {

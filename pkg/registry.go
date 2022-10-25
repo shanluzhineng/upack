@@ -306,6 +306,8 @@ func (r Registry) GetOrDownload(group, name string, version *UniversalPackageVer
 		}
 		temp_file_name := f.Name()
 
+		startTime := time.Now()
+		fmt.Println("downloading", fmt.Sprintf("%s/%s@%s", group, name, version.String()), "please waitting...")
 		err = r.cachePackageToDisk(f, group, name, version, feedURL, feedAuthentication)
 		if err == nil {
 			_, err = f.Seek(0, io.SeekStart)
@@ -315,6 +317,8 @@ func (r Registry) GetOrDownload(group, name string, version *UniversalPackageVer
 			_ = os.Remove(temp_file_name)
 			return nil, nil, err
 		}
+		timeDuration := time.Since(startTime)
+		fmt.Println("download finished", fmt.Sprintf("%s/%s@%s", group, name, version.String()), fmt.Sprintf("elapsed time:%.0f seconds", timeDuration.Seconds()))
 
 		return f, func() error {
 			err := f.Close()
