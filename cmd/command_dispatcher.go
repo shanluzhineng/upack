@@ -8,26 +8,53 @@ import (
 	"github.com/abmpio/upack/pkg"
 )
 
-var DefaultDispatcher = CommandDispatcher{
-	// &pkg.Pack{},
-	// &pkg.Push{},
-	// &pkg.Unpack{},
-	// &pkg.Install{},
-	&install{},
-	&installapp{},
-	&pack{},
-	&packapp{},
-	&push{},
-	&list{},
-	// &pkg.Repack{},
-	// &pkg.Verify{},
-	// &pkg.Hash{},
-	// &pkg.Metadata{},
+var (
+	// 应用标题
+	AppTitle string = "plugininstaller"
+
+	// 应用版本
+	AppVersion string = pkg.Version
+
+	// 应用描述
+	AppDescription string
+
+	DefaultDispatcher = CommandDispatcher{
+		// &pkg.Pack{},
+		// &pkg.Push{},
+		// &pkg.Unpack{},
+		// &pkg.Install{},
+		&install{},
+		&installapp{},
+		&pack{},
+		&packapp{},
+		&push{},
+		&list{},
+		// &pkg.Repack{},
+		// &pkg.Verify{},
+		// &pkg.Hash{},
+		// &pkg.Metadata{},
+	}
+)
+
+func RegistCommand(cmd pkg.Command) {
+	DefaultDispatcher = append(DefaultDispatcher, cmd)
+}
+
+func WithAppTitle(appTitle string) {
+	AppTitle = appTitle
+}
+
+func WithAppVersion(version string) {
+	AppVersion = version
+}
+
+func WithAppDescription(description string) {
+	AppDescription = description
 }
 
 type CommandDispatcher []pkg.Command
 
-func (cd CommandDispatcher) Main(args []string) {
+func (cd CommandDispatcher) Run(args []string) {
 	var onlyPositional bool
 	var hadError bool
 

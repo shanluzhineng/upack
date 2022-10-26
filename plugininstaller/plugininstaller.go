@@ -1,9 +1,11 @@
 package main
 
 import (
+	"os"
+
 	"github.com/abmpio/upack/cmd"
 )
 
 func main() {
-	cmd.Main()
+	cmd.DefaultDispatcher.Run(os.Args[1:])
 }
