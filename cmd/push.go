@@ -9,7 +9,7 @@ import (
 	"github.com/abmpio/upack/pkg"
 )
 
-type push struct {
+type Push struct {
 	Package string
 
 	SourceFeedName string
@@ -18,33 +18,33 @@ type push struct {
 	_configuration Configuration
 }
 
-func (*push) Name() string { return "push" }
-func (*push) Description() string {
+func (*Push) Name() string { return "push" }
+func (*Push) Description() string {
 	return "发布一个模块包.upack文件到模块仓储中."
 }
 
-func (p *push) Help() string  { return pkg.DefaultCommandHelp(p) }
-func (p *push) Usage() string { return pkg.DefaultCommandUsage(p) }
+func (p *Push) Help() string  { return pkg.DefaultCommandHelp(p) }
+func (p *Push) Usage() string { return pkg.DefaultCommandUsage(p) }
 
-func (*push) PositionalArguments() []pkg.PositionalArgument {
+func (*Push) PositionalArguments() []pkg.PositionalArgument {
 	return []pkg.PositionalArgument{
 		{
 			Name:        "package",
 			Description: ".upack文件路径.",
 			Index:       0,
 			TrySetValue: pkg.TrySetStringValue("package", func(cmd pkg.Command) *string {
-				return &cmd.(*push).Package
+				return &cmd.(*Push).Package
 			}),
 		},
 	}
 }
 
-func (*push) ExtraArguments() []pkg.ExtraArgument {
+func (*Push) ExtraArguments() []pkg.ExtraArgument {
 	return nil
 }
 
 // 设置默认属性
-func (i *push) setupDefaultProperties() {
+func (i *Push) setupDefaultProperties() {
 	if len(i.SourceFeedName) > 0 {
 		i._configuration = defaultConfigurationWithFeedName(i.SourceFeedName)
 	} else {
@@ -53,7 +53,7 @@ func (i *push) setupDefaultProperties() {
 	i.Type = PackageType_Plugin
 }
 
-func (p *push) Run() int {
+func (p *Push) Run() int {
 	p.setupDefaultProperties()
 
 	packageStream, err := os.Open(p.Package)

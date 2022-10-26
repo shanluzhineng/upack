@@ -7,24 +7,24 @@ import (
 	"github.com/abmpio/upack/pkg"
 )
 
-type list struct {
+type List struct {
 	UserRegistry bool
 }
 
-func (*list) Name() string        { return "list" }
-func (*list) Description() string { return "查看应用安装的所有模块." }
+func (*List) Name() string        { return "list" }
+func (*List) Description() string { return "查看应用安装的所有模块." }
 
-func (l *list) Help() string  { return pkg.DefaultCommandHelp(l) }
-func (l *list) Usage() string { return pkg.DefaultCommandUsage(l) }
+func (l *List) Help() string  { return pkg.DefaultCommandHelp(l) }
+func (l *List) Usage() string { return pkg.DefaultCommandUsage(l) }
 
-func (*list) PositionalArguments() []pkg.PositionalArgument {
+func (*List) PositionalArguments() []pkg.PositionalArgument {
 	return nil
 }
-func (*list) ExtraArguments() []pkg.ExtraArgument {
+func (*List) ExtraArguments() []pkg.ExtraArgument {
 	return nil
 }
 
-func (l *list) Run() int {
+func (l *List) Run() int {
 	r := pkg.PlugIns
 
 	packages, err := r.ListInstalledPackages()

@@ -18,7 +18,7 @@ const (
 	_defaultCachePackages      = false
 )
 
-type install struct {
+type Install struct {
 	//模块所属组、名称、版本的组合名称, 格式使用: 所属组/名称@版本，版本可为空，如system/quartz@2.2.0,system/quartz@2.*"
 	PackageName    string
 	SourceFeedName string
@@ -34,33 +34,33 @@ type install struct {
 	_configuration Configuration
 }
 
-func (*install) Name() string { return "install" }
-func (*install) Description() string {
+func (*Install) Name() string { return "install" }
+func (*Install) Description() string {
 	return "从模块仓储中下载并安装模块到插件目录."
 }
 
-func (i *install) Help() string  { return pkg.DefaultCommandHelp(i) }
-func (i *install) Usage() string { return pkg.DefaultCommandUsage(i) }
+func (i *Install) Help() string  { return pkg.DefaultCommandHelp(i) }
+func (i *Install) Usage() string { return pkg.DefaultCommandUsage(i) }
 
-func (*install) PositionalArguments() []pkg.PositionalArgument {
+func (*Install) PositionalArguments() []pkg.PositionalArgument {
 	return []pkg.PositionalArgument{
 		{
 			Name:        "package",
 			Description: "模块所属组、名称、版本的组合名称, 格式使用: 所属组/名称@版本,版本可为空,如system/quartz@2.2.0,system/quartz@2.*",
 			Index:       0,
 			TrySetValue: pkg.TrySetStringValue("package", func(cmd pkg.Command) *string {
-				return &cmd.(*install).PackageName
+				return &cmd.(*Install).PackageName
 			}),
 		},
 	}
 }
 
-func (*install) ExtraArguments() []pkg.ExtraArgument {
+func (*Install) ExtraArguments() []pkg.ExtraArgument {
 	return nil
 }
 
 // 设置默认属性
-func (i *install) setupDefaultProperties() {
+func (i *Install) setupDefaultProperties() {
 	if len(i.SourceFeedName) > 0 {
 		i._configuration = defaultConfigurationWithFeedName(i.SourceFeedName)
 	} else {
@@ -72,7 +72,7 @@ func (i *install) setupDefaultProperties() {
 	}
 }
 
-func (i *install) Run() int {
+func (i *Install) Run() int {
 	i.setupDefaultProperties()
 
 	r, size, done, err := i.OpenPackage()
@@ -102,7 +102,7 @@ func (i *install) Run() int {
 	return 0
 }
 
-func (i *install) OpenPackage() (io.ReaderAt, int64, func() error, error) {
+func (i *Install) OpenPackage() (io.ReaderAt, int64, func() error, error) {
 	var version *pkg.UniversalPackageVersion
 
 	newPackageInfo, err := parsePackageNameWithVersion(i.PackageName)
@@ -187,7 +187,7 @@ func (i *install) OpenPackage() (io.ReaderAt, int64, func() error, error) {
 	return f, fi.Size(), done, nil
 }
 
-func (i *install) formatTargetPath(info *packageInfo, absPath bool) string {
+func (i *Install) formatTargetPath(info *packageInfo, absPath bool) string {
 	if i.Type != PackageType_Plugin {
 		//app，install current folder
 		return ""
@@ -198,7 +198,7 @@ func (i *install) formatTargetPath(info *packageInfo, absPath bool) string {
 	return filepath.Join(info.group, info.name, info.version)
 }
 
-func (i *install) readManifest(zip *zip.Reader) (*pkg.UniversalPackageMetadata, error) {
+func (i *Install) readManifest(zip *zip.Reader) (*pkg.UniversalPackageMetadata, error) {
 	for _, entry := range zip.File {
 		if entry.Name == "upack.json" {
 			r, err := entry.Open()

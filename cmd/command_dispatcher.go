@@ -23,12 +23,6 @@ var (
 		// &pkg.Push{},
 		// &pkg.Unpack{},
 		// &pkg.Install{},
-		&install{},
-		&installapp{},
-		&pack{},
-		&packapp{},
-		&push{},
-		&list{},
 		// &pkg.Repack{},
 		// &pkg.Verify{},
 		// &pkg.Hash{},
@@ -36,8 +30,8 @@ var (
 	}
 )
 
-func RegistCommand(cmd pkg.Command) {
-	DefaultDispatcher = append(DefaultDispatcher, cmd)
+func RegistCommand(cmdList ...pkg.Command) {
+	DefaultDispatcher = append(DefaultDispatcher, cmdList...)
 }
 
 func WithAppTitle(appTitle string) {

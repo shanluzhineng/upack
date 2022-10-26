@@ -13,7 +13,7 @@ import (
 	"github.com/abmpio/upack/pkg"
 )
 
-type pack struct {
+type Pack struct {
 	SourceDirectory string
 	//模块所属组、名称、版本的组合名称, 格式使用: 所属组/名称@版本，版本可为空，如system/quartz@2.2.0,system/quartz@2.*"
 	PackageName string
@@ -26,47 +26,47 @@ type pack struct {
 	_configuration Configuration
 }
 
-func (*pack) Name() string { return "pack" }
-func (*pack) Description() string {
+func (*Pack) Name() string { return "pack" }
+func (*Pack) Description() string {
 	return "根据元数据生成一个plugin包."
 }
 
-func (p *pack) Help() string  { return pkg.DefaultCommandHelp(p) }
-func (p *pack) Usage() string { return pkg.DefaultCommandUsage(p) }
+func (p *Pack) Help() string  { return pkg.DefaultCommandHelp(p) }
+func (p *Pack) Usage() string { return pkg.DefaultCommandUsage(p) }
 
-func (*pack) PositionalArguments() []pkg.PositionalArgument {
+func (*Pack) PositionalArguments() []pkg.PositionalArgument {
 	return []pkg.PositionalArgument{
 		{
 			Name:        "package",
 			Description: "模块所属组、名称、版本的组合名称, 格式使用: 所属组/名称@版本,版本可为空,如system/quartz@2.2.0,system/quartz@2.*",
 			Index:       0,
 			TrySetValue: pkg.TrySetStringValue("package", func(cmd pkg.Command) *string {
-				return &cmd.(*pack).PackageName
+				return &cmd.(*Pack).PackageName
 			}),
 		},
 	}
 }
 
-func (*pack) ExtraArguments() []pkg.ExtraArgument {
+func (*Pack) ExtraArguments() []pkg.ExtraArgument {
 	return []pkg.ExtraArgument{
 		{
 			Name:        "source",
 			Description: "包含了插件所有文件的目录.",
 			TrySetValue: pkg.TrySetPathValue("source", func(cmd pkg.Command) *string {
-				return &cmd.(*pack).SourceDirectory
+				return &cmd.(*Pack).SourceDirectory
 			}),
 		},
 		{
 			Name:        "push",
 			Description: "是否自动push到仓库中",
 			TrySetValue: pkg.TrySetBoolValue("push", func(cmd pkg.Command) *bool {
-				return &cmd.(*pack).AutoPush
+				return &cmd.(*Pack).AutoPush
 			}),
 		},
 	}
 }
 
-func (p *pack) setupDefaultProperties() {
+func (p *Pack) setupDefaultProperties() {
 	p._configuration = *defaultConfiguration()
 	if p.TargetDirectory == "" {
 		p.TargetDirectory, _ = os.Getwd()
@@ -101,7 +101,7 @@ func (p *pack) setupDefaultProperties() {
 	}
 }
 
-func (p *pack) Run() int {
+func (p *Pack) Run() int {
 	p.setupDefaultProperties()
 	info := &p.Metadata
 
@@ -217,7 +217,7 @@ func (p *pack) Run() int {
 
 	// fileName := pathfile. targetFileName
 	if p.AutoPush {
-		pushCmd := new(push)
+		pushCmd := new(Push)
 		pushCmd.Package = filepath.Base(targetFileName)
 		return pushCmd.Run()
 	}

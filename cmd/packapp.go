@@ -13,7 +13,7 @@ import (
 	"github.com/abmpio/upack/pkg"
 )
 
-type packapp struct {
+type PackApp struct {
 	SourceDirectory string
 	//是否自动push
 	AutoPush bool
@@ -24,52 +24,52 @@ type packapp struct {
 	_configuration Configuration
 }
 
-func (*packapp) Name() string { return "packapp" }
-func (*packapp) Description() string {
+func (*PackApp) Name() string { return "packapp" }
+func (*PackApp) Description() string {
 	return "根据元数据生成一个app包."
 }
 
-func (p *packapp) Help() string  { return pkg.DefaultCommandHelp(p) }
-func (p *packapp) Usage() string { return pkg.DefaultCommandUsage(p) }
+func (p *PackApp) Help() string  { return pkg.DefaultCommandHelp(p) }
+func (p *PackApp) Usage() string { return pkg.DefaultCommandUsage(p) }
 
-func (*packapp) PositionalArguments() []pkg.PositionalArgument {
+func (*PackApp) PositionalArguments() []pkg.PositionalArgument {
 	return nil
 }
 
-func (*packapp) ExtraArguments() []pkg.ExtraArgument {
+func (*PackApp) ExtraArguments() []pkg.ExtraArgument {
 	return []pkg.ExtraArgument{
 		{
 			Name:        "source",
 			Description: "包含了应用所有文件的目录.",
 			TrySetValue: pkg.TrySetPathValue("source", func(cmd pkg.Command) *string {
-				return &cmd.(*packapp).SourceDirectory
+				return &cmd.(*PackApp).SourceDirectory
 			}),
 		},
 		{
 			Name:        "name",
 			Description: "应用包名,如果不指定将使用文件夹的名称",
 			TrySetValue: pkg.TrySetStringFnValue("name", func(cmd pkg.Command) func(string) {
-				return (&cmd.(*packapp).Metadata).SetName
+				return (&cmd.(*PackApp).Metadata).SetName
 			}),
 		},
 		{
 			Name:        "push",
 			Description: "是否自动push到仓库中",
 			TrySetValue: pkg.TrySetBoolValue("push", func(cmd pkg.Command) *bool {
-				return &cmd.(*packapp).AutoPush
+				return &cmd.(*PackApp).AutoPush
 			}),
 		},
 		{
 			Name:        "ver",
 			Description: "应用版本号,如果未指定将自动决定版本号.仓库中不存在此包则版本号为1.0.0,如果已经有,则将版本号的minor部分加1,如已经存在了1.1.0的包,则新的包为1.2.0",
 			TrySetValue: pkg.TrySetStringFnValue("version", func(cmd pkg.Command) func(string) {
-				return (&cmd.(*packapp).Metadata).SetVersion
+				return (&cmd.(*PackApp).Metadata).SetVersion
 			}),
 		},
 	}
 }
 
-func (p *packapp) setupDefaultProperties() {
+func (p *PackApp) setupDefaultProperties() {
 	p._configuration = defaultConfigurationWithFeedName(_defaultAppSourceFeedName)
 	if p.TargetDirectory == "" {
 		p.TargetDirectory, _ = os.Getwd()
@@ -100,7 +100,7 @@ func (p *packapp) setupDefaultProperties() {
 	}
 }
 
-func (p *packapp) Run() int {
+func (p *PackApp) Run() int {
 	p.setupDefaultProperties()
 	info := &p.Metadata
 
@@ -216,7 +216,7 @@ func (p *packapp) Run() int {
 
 	// fileName := pathfile. targetFileName
 	if p.AutoPush {
-		pushCmd := new(push)
+		pushCmd := new(Push)
 		pushCmd.Package = filepath.Base(targetFileName)
 		pushCmd.SourceFeedName = _defaultAppSourceFeedName
 		pushCmd.Type = PackageType_App
