@@ -398,6 +398,15 @@ func (i InstalledPackage) GroupAndName() string {
 	return i.Name
 }
 
+// get package name, group/name@version
+func (i InstalledPackage) PackageName() string {
+	groupAndName := i.GroupAndName()
+	if i.Version == nil {
+		return groupAndName
+	}
+	return fmt.Sprintf("%s@%s", groupAndName, i.Version.String())
+}
+
 type InstalledPackageDate struct {
 	Date time.Time
 

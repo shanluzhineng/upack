@@ -10,7 +10,7 @@
             "request": "launch",
             "mode": "auto",
             "program": "./plugininstaller/plugininstaller.go",
-            "args": ["installapp","abmp.open"]
+            "args": ["install","system/swagger"]
         }
     ]
 }

@@ -90,7 +90,7 @@ func (i *Install) Run() int {
 
 	targetDirectory := i._targetDirectory
 	if len(targetDirectory) <= 0 {
-		targetDirectory = i.formatTargetPath(i._packageInfo, true)
+		targetDirectory = i.formatTargetPath(i._packageInfo)
 	}
 
 	err = pkg.UnpackZip(targetDirectory, _defaultOverwrite, zip, _defaultPrerelease)
@@ -138,7 +138,7 @@ func (i *Install) OpenPackage() (io.ReaderAt, int64, func() error, error) {
 
 	targetDirectory := i._targetDirectory
 	if len(targetDirectory) <= 0 {
-		targetDirectory = i.formatTargetPath(newPackageInfo, false)
+		targetDirectory = i.formatTargetPath(newPackageInfo)
 	}
 
 	f, done, err := i._registry.GetOrDownload(newPackageInfo.group,
@@ -187,15 +187,12 @@ func (i *Install) OpenPackage() (io.ReaderAt, int64, func() error, error) {
 	return f, fi.Size(), done, nil
 }
 
-func (i *Install) formatTargetPath(info *packageInfo, absPath bool) string {
+func (i *Install) formatTargetPath(info *packageInfo) string {
 	if i.Type != PackageType_Plugin {
 		//app，install current folder
 		return ""
 	}
-	if absPath {
-		return filepath.Join(string(i._registry), info.group, info.name, info.version)
-	}
-	return filepath.Join(info.group, info.name, info.version)
+	return filepath.Join(string(i._registry), info.group, info.name, info.version)
 }
 
 func (i *Install) readManifest(zip *zip.Reader) (*pkg.UniversalPackageMetadata, error) {
