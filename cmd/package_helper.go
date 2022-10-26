@@ -39,7 +39,7 @@ func parsePackageNameWithVersion(packageName string) (*packageInfo, error) {
 	}
 
 	newPackage := parseGroupAndName(packageName[:versionIndex])
-	newPackage.version = packageName[versionIndex:]
+	newPackage.version = packageName[versionIndex+1:]
 	return newPackage, nil
 }
 

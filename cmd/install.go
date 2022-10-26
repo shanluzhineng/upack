@@ -88,12 +88,8 @@ func (i *Install) Run() int {
 		return 1
 	}
 
-	targetDirectory := i._targetDirectory
-	if len(targetDirectory) <= 0 {
-		targetDirectory = i.formatTargetPath(i._packageInfo)
-	}
-
-	err = pkg.UnpackZip(targetDirectory, _defaultOverwrite, zip, _defaultPrerelease)
+	i._targetDirectory = i.formatTargetPath(i._packageInfo)
+	err = pkg.UnpackZip(i._targetDirectory, _defaultOverwrite, zip, _defaultPrerelease)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return 1
@@ -136,10 +132,7 @@ func (i *Install) OpenPackage() (io.ReaderAt, int64, func() error, error) {
 	//version
 	newPackageInfo.version = version.String()
 
-	targetDirectory := i._targetDirectory
-	if len(targetDirectory) <= 0 {
-		targetDirectory = i.formatTargetPath(newPackageInfo)
-	}
+	targetDirectory := i.formatTargetPath(newPackageInfo)
 
 	f, done, err := i._registry.GetOrDownload(newPackageInfo.group,
 		newPackageInfo.name,
@@ -185,6 +178,10 @@ func (i *Install) OpenPackage() (io.ReaderAt, int64, func() error, error) {
 		}
 	}
 	return f, fi.Size(), done, nil
+}
+
+func (i *Install) InstalledPath() string {
+	return i._targetDirectory
 }
 
 func (i *Install) formatTargetPath(info *packageInfo) string {

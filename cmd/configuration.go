@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path"
 	"strings"
@@ -12,13 +13,13 @@ import (
 const (
 	ConfigurationKey = "plugininstaller"
 
-	_envKeySourceUrl string = ConfigurationKey + ".sourceUrl"
-	_envKeyFeedName  string = ConfigurationKey + ".feedName"
-	_envKeyApiKey    string = ConfigurationKey + ".apiKey"
+	_envKeySourceUrl string = ConfigurationKey + "_sourceUrl"
+	_envKeyFeedName  string = ConfigurationKey + "_feedName"
+	_envKeyApiKey    string = ConfigurationKey + "_apiKey"
 )
 
 func getConfigKey(key string) string {
-	return strings.ToLower(key)
+	return fmt.Sprintf("%s_%s", ConfigurationKey, strings.ToLower(key))
 }
 
 type Configuration struct {
@@ -77,7 +78,7 @@ func (c *Configuration) readFromConfig(properties map[string]interface{}) {
 
 	//url
 	sourceUrl, _ := properties[getConfigKey("sourceUrl")].(string)
-	sourceFeedName, _ := properties[getConfigKey("sourceFeedName")].(string)
+	sourceFeedName, _ := properties[getConfigKey("feedName")].(string)
 	if len(sourceUrl) > 0 || len(sourceFeedName) > 0 {
 		c.SetSourceFeedUrl(sourceUrl, sourceFeedName)
 	}
