@@ -23,29 +23,29 @@ func getCurrentDirectory() string {
 	return path
 }
 
-func copyFile(src, dst string) (int64, error) {
+func copyFile(src, dst string) error {
 	sourceFileStat, err := os.Stat(src)
 	if err != nil {
-		return 0, err
+		return err
 	}
 
 	if !sourceFileStat.Mode().IsRegular() {
-		return 0, fmt.Errorf("%s is not a regular file", src)
+		return fmt.Errorf("%s is not a regular file", src)
 	}
 
 	source, err := os.Open(src)
 	if err != nil {
-		return 0, err
+		return err
 	}
 	defer source.Close()
 
-	destination, err := os.Create(dst)
+	destination, err := os.OpenFile(dst, os.O_RDWR|os.O_CREATE, os.ModePerm)
 	if err != nil {
-		return 0, err
+		return err
 	}
 	defer destination.Close()
-	nBytes, err := io.Copy(destination, source)
-	return nBytes, err
+	_, err = io.Copy(destination, source)
+	return err
 }
 
 func readJsonFile(filename string) ([]byte, error) {

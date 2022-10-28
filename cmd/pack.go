@@ -196,23 +196,16 @@ func (p *Pack) Run() int {
 		return 1
 	}
 
-	if isWindows() {
-		//windows,cp first,then remove
-		_, err = copyFile(tmpPath, targetFileName)
-		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			return 1
-		}
-		err = os.Remove(tmpPath)
-		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
-		}
-	} else {
-		err = os.Rename(tmpPath, targetFileName)
-		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			return 1
-		}
+	//windows,cp first,then remove
+	err = copyFile(tmpPath, targetFileName)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		return 1
+	}
+	err = os.Remove(tmpPath)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		return 1
 	}
 
 	// fileName := pathfile. targetFileName

@@ -197,7 +197,7 @@ func (p *PackApp) Run() int {
 
 	if isWindows() {
 		//windows,cp first,then remove
-		_, err = copyFile(tmpPath, targetFileName)
+		err = copyFile(tmpPath, targetFileName)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			return 1
