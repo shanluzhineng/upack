@@ -115,7 +115,13 @@ func getSourceFeedUrl(sourceUrl string, sourceFeedName string) string {
 }
 
 func getEnvKey(key string) string {
-	return os.Getenv(key)
+	value := os.Getenv(key)
+	if len(value) <= 0 {
+		//全部小写，以适配viper
+		key := strings.ToLower(key)
+		value = os.Getenv(key)
+	}
+	return value
 }
 
 func getAuthentication(value string) *[2]string {
