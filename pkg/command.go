@@ -108,7 +108,12 @@ func TrySetPathValue(name string, f func(Command) *string) func(Command, *string
 			return false
 		}
 
-		p, err := filepath.Abs(*value)
+		normalizedPath := *value
+		if strings.HasPrefix(normalizedPath, "'") && strings.HasSuffix(normalizedPath, "'") {
+			normalizedPath = strings.TrimPrefix(normalizedPath, "'")
+			normalizedPath = strings.TrimSuffix(normalizedPath, "'")
+		}
+		p, err := filepath.Abs(normalizedPath)
 		if err != nil {
 			fmt.Println("--"+name, "must be a valid path.")
 			return false

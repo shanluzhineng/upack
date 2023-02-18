@@ -71,18 +71,15 @@ func (*PackApp) ExtraArguments() []pkg.ExtraArgument {
 
 func (p *PackApp) setupDefaultProperties() {
 	p._configuration = defaultConfigurationWithFeedName(_defaultAppSourceFeedName)
-	if p.TargetDirectory == "" {
-		p.TargetDirectory, _ = os.Getwd()
-	}
 	if len(p.SourceDirectory) <= 0 {
 		p.SourceDirectory, _ = os.Getwd()
 	}
+	if p.TargetDirectory == "" {
+		p.TargetDirectory = p.SourceDirectory
+	}
 	p.Metadata.SetGroup(_defaultAppGroupName)
 	if len(p.Metadata.Name()) <= 0 {
-		currentPathName, err := os.Getwd()
-		if err == nil {
-			p.Metadata.SetName(filepath.Base(currentPathName))
-		}
+		p.Metadata.SetName(filepath.Base(p.SourceDirectory))
 	}
 	if len(p.Metadata.Version()) <= 0 {
 		latestVersion, err := getLatestVersion(p._configuration.SourceFeedUrl,
@@ -207,7 +204,8 @@ func (p *PackApp) Run() int {
 			fmt.Fprintln(os.Stderr, err)
 		}
 	} else {
-		err = os.Rename(tmpPath, targetFileName)
+		// err = os.Rename(tmpPath, targetFileName)
+		err = MoveFile(tmpPath, targetFileName)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			return 1
