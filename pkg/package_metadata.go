@@ -47,7 +47,7 @@ func (meta UniversalPackageMetadata) Version() string {
 	return meta.getString("version")
 }
 
-func (meta UniversalPackageMetadata) SetVersion(version string) {
+func (meta *UniversalPackageMetadata) SetVersion(version string) {
 	meta.setString("version", version)
 }
 

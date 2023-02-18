@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/abmpio/upack/pkg"
 )
@@ -45,12 +46,17 @@ func (*Push) ExtraArguments() []pkg.ExtraArgument {
 
 // 设置默认属性
 func (i *Push) setupDefaultProperties() {
+	if strings.TrimSpace(string(i.Type)) == "" {
+		i.Type = PackageType_Plugin
+	}
+	if i.Type == PackageType_App {
+		i.SourceFeedName = _defaultAppSourceFeedName
+	}
 	if len(i.SourceFeedName) > 0 {
 		i._configuration = defaultConfigurationWithFeedName(i.SourceFeedName)
 	} else {
 		i._configuration = *defaultConfiguration()
 	}
-	i.Type = PackageType_Plugin
 }
 
 func (p *Push) Run() int {

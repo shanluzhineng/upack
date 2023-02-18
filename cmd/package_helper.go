@@ -9,9 +9,14 @@ import (
 
 type PackageType string
 
+func (t PackageType) IsValid() bool {
+	return t == PackageType_App || t == PackageType_Plugin || t == PackageType_Tools
+}
+
 const (
-	_defaultAppGroupName      = "App"
-	_defaultPluginGroupName   = "plugins"
+	_defaultAppGroupName    = "App"
+	_defaultPluginGroupName = "plugins"
+
 	_defaultAppSourceFeedName = "app"
 
 	PackageType_Plugin PackageType = "plugin"

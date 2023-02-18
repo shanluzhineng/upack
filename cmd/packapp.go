@@ -61,6 +61,7 @@ func (*PackApp) ExtraArguments() []pkg.ExtraArgument {
 		},
 		{
 			Name:        "ver",
+			Alias:       []string{"version", "v"},
 			Description: "应用版本号,如果未指定将自动决定版本号.仓库中不存在此包则版本号为1.0.0,如果已经有,则将版本号的minor部分加1,如已经存在了1.1.0的包,则新的包为1.2.0",
 			TrySetValue: pkg.TrySetStringFnValue("version", func(cmd pkg.Command) func(string) {
 				return (&cmd.(*PackApp).Metadata).SetVersion
@@ -180,11 +181,7 @@ func (p *PackApp) Run() int {
 		fmt.Fprintln(os.Stderr, err)
 		return 1
 	}
-	// err = os.Remove(targetFileName)
-	// if err != nil {
-	// 	fmt.Fprintln(os.Stderr, err)
-	// 	return 1
-	// }
+
 	err = tmpFile.Close()
 	tmpFile = nil
 	if err != nil {
@@ -204,7 +201,6 @@ func (p *PackApp) Run() int {
 			fmt.Fprintln(os.Stderr, err)
 		}
 	} else {
-		// err = os.Rename(tmpPath, targetFileName)
 		err = MoveFile(tmpPath, targetFileName)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
@@ -212,11 +208,9 @@ func (p *PackApp) Run() int {
 		}
 	}
 
-	// fileName := pathfile. targetFileName
 	if p.AutoPush {
 		pushCmd := new(Push)
-		pushCmd.Package = filepath.Base(targetFileName)
-		pushCmd.SourceFeedName = _defaultAppSourceFeedName
+		pushCmd.Package = targetFileName
 		pushCmd.Type = PackageType_App
 		return pushCmd.Run()
 	}
