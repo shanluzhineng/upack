@@ -13,7 +13,9 @@ go install github.com/abmpio/upack/plugininstaller@latest
 通过设置以下环境变量来指定相关参数
 
 export plugininstaller_sourceUrl=""
+
 export plugininstaller_feedName=""
+
 export plugininstaller_apiKey=""
 
 
