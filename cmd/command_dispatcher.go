@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/abmpio/upack/pkg"
+	"github.com/shanluzhineng/upack/pkg"
 )
 
 var (

@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/abmpio/upack/pkg"
+	"github.com/shanluzhineng/upack/pkg"
 )
 
 type Pack struct {

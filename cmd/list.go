@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/abmpio/upack/pkg"
+	"github.com/shanluzhineng/upack/pkg"
 )
 
 type List struct {

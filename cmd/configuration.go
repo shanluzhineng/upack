@@ -7,7 +7,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/abmpio/upack/pkg"
+	"github.com/shanluzhineng/upack/pkg"
 )
 
 const (

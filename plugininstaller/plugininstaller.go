@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/abmpio/upack/cmd"
+	"github.com/shanluzhineng/upack/cmd"
 )
 
 func main() {

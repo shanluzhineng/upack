@@ -8,7 +8,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/abmpio/upack/cmd/cast"
+	"github.com/shanluzhineng/upack/cmd/cast"
 	"github.com/pkg/errors"
 )
 

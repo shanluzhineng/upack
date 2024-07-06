@@ -5,7 +5,7 @@ golang upack for proget
 ## 1. install
 
 ```
-go install github.com/abmpio/upack/plugininstaller@latest
+go install github.com/shanluzhineng/upack/plugininstaller@latest
 ```
 
 ## 2. environment variables

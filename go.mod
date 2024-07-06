@@ -1,4 +1,4 @@
-module github.com/abmpio/upack
+module github.com/shanluzhineng/upack
 
 go 1.19
 

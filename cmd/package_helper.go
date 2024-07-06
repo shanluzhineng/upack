@@ -4,7 +4,7 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/abmpio/upack/pkg"
+	"github.com/shanluzhineng/upack/pkg"
 )
 
 type PackageType string

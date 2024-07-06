@@ -3,3 +3,4 @@
 /plugininstaller/*.upack
 /.vscode
 plugininstaller/plugininstaller
+go.sum

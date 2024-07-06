@@ -3,7 +3,7 @@ package cmd
 import (
 	"strings"
 
-	"github.com/abmpio/upack/pkg"
+	"github.com/shanluzhineng/upack/pkg"
 )
 
 type InstallApp struct {
